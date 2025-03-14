@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form Login</title>
+    <style>
+        /* Reset styles for a clean slate */
+        * {
+            margin: 0;
+            padding: 0;             
+            box-sizing: border-box;
+        }
+        
+        /* Body with white background */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        
+        /* Container setup */
+        .container {
+            display: flex;
+            background-color: #f8f9fa; /* Light gray background for container */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        /* Illustration container on the left */
+        .illustration {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        /* Image styling */
+        .illustration img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        /* Login form section */
+        .login-form {
+            flex: 1;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        /* Main heading */
+        .login-form h1 {
+            margin: 0 0 20px;
+            font-size: 36px;
+            color: #333;
+        }
+        
+        /* Paragraph styling */
+        .login-form p {
+            margin: 0 0 20px;
+            color: #666;
+        }
+        
+        /* Styling for each input field */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            color: #333;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+        }
+        
+        /* Button styles */
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button[type="button"] {
+            background-color: #6c757d;
+        }
+        
+        button[type="button"]:hover {
+            background-color: #5a6268;
+        }
+        
+        </style>
+</head>
+<body>
+    <div class="container">
+        <div class="illustration">
+            <img src="mm2.jpeg" alt="Illustration of feedback">
+        </div>
+        <div class="login-form">
+            <h1>Feedback Login</h1>
+            <p>To provide feedback, please login with your credentials.</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit">Login Now</button>
+                <button type="button" onclick="window.location.href='signup.html'">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) throw new Error((await response.json()).message || 'Login failed');
+
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+                window.location.href = 'homepage.html';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

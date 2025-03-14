@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Courses - Feedback</title>
+    <link rel="stylesheet" href="homepage.css">
+</head>
+<body>
+    <header>
+        <h1>Programming Courses Feedback</h1>
+        <p>Your feedback helps improve learning experiences for others!</p>
+    </header>
+
+    <!-- Courses Container -->
+    <div id="coursesContainer" class="courses-container"></div>
+
+    <!-- About Section -->
+     <br>
+    <section class="about">
+        <h2>About This Page</h2>
+        <p class="about-description">We value your thoughts and experiences. By sharing your feedback on the courses, you help us create better educational resources for all learners. Your insights guide us in making courses more interactive, engaging, and effective. Let’s shape the future of learning together!</p>
+
+        <!-- Logout Button -->
+        <button class="logout-button" onclick="logout()">Logout</button>
+
+        <!-- Copyright Section -->
+        <footer>
+            <p>&copy; 2024 Programming Courses. All rights reserved.</p>
+        </footer>
+    </section>
+
+    <script>
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token'); // Remove token from localStorage
+            localStorage.removeItem('username'); // Remove username from localStorage
+            window.location.href = 'login.html'; // Redirect to login page
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html'; // Redirect if not logged in
+        }
+
+        // Fetch username from localStorage
+        const username = localStorage.getItem('username');
+        if (username) {
+            document.getElementById('username').textContent = `Hello, ${username}`;
+        }
+
+        // Fetch courses from the backend API
+        fetch('http://localhost:5000/courses', {
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${token}` // Attach the token with 'Bearer' prefix
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error(`Error: ${response.status} ${response.statusText}`);
+                throw new Error('Failed to fetch courses');
+            }
+            return response.json();
+        })
+        .then(courses => {
+            const coursesContainer = document.getElementById('coursesContainer');
+            if (courses.length === 0) {
+                coursesContainer.innerHTML = '<p>No courses available.</p>';
+                return;
+            }
+            displayCourses(courses);
+        })
+        .catch(error => {
+            console.error('An error occurred:', error.message);
+            document.getElementById('coursesContainer').innerHTML = '<p>Error loading courses. Please try again later.</p>';
+        });
+
+        function displayCourses(courses) {
+            const coursesContainer = document.getElementById('coursesContainer');
+            courses.forEach(course => {
+                const courseBox = document.createElement('div');
+                courseBox.classList.add('course-box');
+                
+                const feedbackGiven = course.feedbackGiven === 1;
+
+                const languages = course.languages && course.languages.length > 0 ? course.languages.split(', ') : '';
+                const imageUrl = course.image_url || 'home.jpeg';
+                const description = course.description || 'No description available';
+                const courseName = course.name || 'Unnamed Course';
+
+                courseBox.innerHTML = `
+                    <h3 class="course-name">${courseName}</h3>
+                    <div class="course-image">
+                        <img src="${imageUrl}" alt="Course Image">
+                    </div>
+                    <p class="course-description">${description}</p>
+                    ${feedbackGiven ? 
+                        `<span class="completed">✔ Feedback Given</span>` : 
+                        `<button onclick="goToFeedbackForm(${course.id})">Give Feedback</button>`}
+                `;
+
+                coursesContainer.appendChild(courseBox);
+            });
+        }
+
+        function goToFeedbackForm(courseId) {
+            window.location.href = `feedback.html?courseId=${courseId}`;
+        }
+    </script>
+</body>
+</html>

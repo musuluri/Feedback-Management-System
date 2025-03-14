@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Feedback Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .feedback-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            max-width: 100%;
+        }
+
+        .feedback-form h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .feedback-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .submit-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="feedback-form">
+    <h1>Course Feedback Form</h1>
+    <form id="feedbackForm">
+        <table>
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Poor</th>
+                    <th>Fair</th>
+                    <th>Good</th>
+                    <th>Very Good</th>
+                    <th>Excellent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Content Quality</td>
+                    <td><input type="radio" name="content_quality" value="poor" required></td>
+                    <td><input type="radio" name="content_quality" value="fair"></td>
+                    <td><input type="radio" name="content_quality" value="good"></td>
+                    <td><input type="radio" name="content_quality" value="very-good"></td>
+                    <td><input type="radio" name="content_quality" value="excellent"></td>
+                </tr>
+                <tr>
+                    <td>Presentation</td>
+                    <td><input type="radio" name="presentation" value="poor" required></td>
+                    <td><input type="radio" name="presentation" value="fair"></td>
+                    <td><input type="radio" name="presentation" value="good"></td>
+                    <td><input type="radio" name="presentation" value="very-good"></td>
+                    <td><input type="radio" name="presentation" value="excellent"></td>
+                </tr>
+                <tr>
+                    <td>Ease of Understanding</td>
+                    <td><input type="radio" name="understanding" value="poor" required></td>
+                    <td><input type="radio" name="understanding" value="fair"></td>
+                    <td><input type="radio" name="understanding" value="good"></td>
+                    <td><input type="radio" name="understanding" value="very-good"></td>
+                    <td><input type="radio" name="understanding" value="excellent"></td>
+                </tr>
+                <tr>
+                    <td>Engagement</td>
+                    <td><input type="radio" name="engagement" value="poor" required></td>
+                    <td><input type="radio" name="engagement" value="fair"></td>
+                    <td><input type="radio" name="engagement" value="good"></td>
+                    <td><input type="radio" name="engagement" value="very-good"></td>
+                    <td><input type="radio" name="engagement" value="excellent"></td>
+                </tr>
+                <tr>
+                    <td>Overall Satisfaction</td>
+                    <td><input type="radio" name="satisfaction" value="poor" required></td>
+                    <td><input type="radio" name="satisfaction" value="fair"></td>
+                    <td><input type="radio" name="satisfaction" value="good"></td>
+                    <td><input type="radio" name="satisfaction" value="very-good"></td>
+                    <td><input type="radio" name="satisfaction" value="excellent"></td>
+                </tr>
+            </tbody>
+        </table>
+        <textarea class="feedback-textarea" name="feedback_text" placeholder="Additional feedback or comments..." required></textarea>
+        <button type="submit" class="submit-btn">Submit Feedback</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('feedbackForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(this);
+    const feedbackData = {};
+
+    formData.forEach((value, key) => {
+        feedbackData[key] = value;
+    });
+
+    const courseId = new URLSearchParams(window.location.search).get('courseId');
+    if (!courseId) {
+        alert('Course ID is missing.');
+        return;
+    }
+    
+    feedbackData.course_id = courseId;
+
+    try {
+        const response = await fetch('http://localhost:5000/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(feedbackData)
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert('Thank you for your feedback!');
+            await updateFeedbackStatus(courseId);
+            window.location.href = 'homepage.html'; // Redirect to the homepage
+        } else {
+            alert(`Error: ${data.message || 'Could not submit feedback'}`);
+        }
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        alert('An error occurred. Please try again.');
+    }
+});
+
+async function updateFeedbackStatus(courseId) {
+    try {
+        const response = await fetch('http://localhost:5000/update-feedback-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ course_id: courseId })
+        });
+
+        if (response.ok) {
+            console.log('Feedback status updated successfully');
+        } else {
+            const data = await response.json();
+            console.error('Error updating feedback status:', data.message);
+        }
+    } catch (error) {
+        console.error('Error updating feedback status:', error);
+    }
+}
+</script>
+</body>
+</html>
